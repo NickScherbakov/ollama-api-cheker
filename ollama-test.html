@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Chat Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Chat specific styles */
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .chat-input {
+            display: flex;
+            margin-top: 10px;
+        }
+        .chat-input textarea {
+            flex: 1;
+            height: 60px;
+            resize: none;
+            padding: 10px;
+        }
+        .chat-input button {
+            height: 60px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            margin-left: auto;
+            margin-right: 10px;
+        }
+        .bot-message {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            margin-right: auto;
+            margin-left: 10px;
+        }
+        .message-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        .message-header {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 2px;
+            padding: 0 10px;
+        }
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ollama Chat Interface</h1>
+    
+    <div class="tab-container">
+        <div class="tab active" data-tab="chat">Chat</div>
+        <div class="tab" data-tab="testing">API Testing</div>
+    </div>
+
+    <div id="chat-tab" class="tab-content active">
+        <div class="container">
+            <h2>Chat with AI</h2>
+            <div>
+                <label for="chatModelSelect">Select Model:</label>
+                <select id="chatModelSelect">
+                    <option value="">Loading models...</option>
+                </select>
+                <button id="refreshChatModels">Refresh</button>
+            </div>
+            <div class="chat-container" id="chatMessages">
+                <div class="message-container">
+                    <div class="message-header">AI</div>
+                    <div class="message bot-message">Hello! How can I assist you today?</div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <textarea id="userInput" placeholder="Type your message here..."></textarea>
+                <button id="sendMessage">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="testing-tab" class="tab-content">
+        <div class="container">
+            <h2>API Server Connection</h2>
+            <div>
+                <p>Status: <span id="connectionStatus">Checking connection...</span></p>
+                <button id="testConnection">Test Connection</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>Available Models</h2>
+            <button id="listModels">List Models</button>
+            <div id="modelsResult"></div>
+        </div>
+
+        <div class="container">
+            <h2>Test Generation</h2>
+            <div>
+                <label for="modelSelect">Model:</label>
+                <select id="modelSelect">
+                    <option value="">Select a model</option>
+                </select>
+                <button id="refreshModels">Refresh</button>
+            </div>
+            <div>
+                <label for="prompt">Prompt:</label>
+                <textarea id="prompt" placeholder="Enter your prompt here...">Hello! How are you today?</textarea>
+            </div>
+            <button id="generateText">Generate Response</button>
+            <div id="loading" style="display: none;">
+                <span class="loader"></span> Generating response...
+            </div>
+            <div>
+                <h3>Result:</h3>
+                <pre id="generationResult"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API endpoint is now our local proxy server
+        const apiBaseUrl = '/api'; // This will be handled by our proxy server
+        
+        // Tab switching logic
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+        
+        // Testing tab elements
+        const testConnectionBtn = document.getElementById('testConnection');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const listModelsBtn = document.getElementById('listModels');
+        const modelsResult = document.getElementById('modelsResult');
+        const modelSelect = document.getElementById('modelSelect');
+        const refreshModelsBtn = document.getElementById('refreshModels');
+        const promptInput = document.getElementById('prompt');
+        const generateTextBtn = document.getElementById('generateText');
+        const generationResult = document.getElementById('generationResult');
+        const loadingIndicator = document.getElementById('loading');
+
+        // Chat tab elements
+        const chatModelSelect = document.getElementById('chatModelSelect');
+        const refreshChatModelsBtn = document.getElementById('refreshChatModels');
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendMessageBtn = document.getElementById('sendMessage');
+
+        // Helper function to show status messages
+        function showStatus(element, message, isSuccess) {
+            if (isSuccess) {
+                element.innerHTML = `<span style="color: #155724; background-color: #d4edda; padding: 5px; border-radius: 3px;">${message}</span>`;
+            } else {
+                element.innerHTML = `<span style="color: #721c24; background-color: #f8d7da; padding: 5px; border-radius: 3px;">${message}</span>`;
+            }
+        }
+
+        // Test connection to Ollama API via our proxy
+        testConnectionBtn.addEventListener('click', async () => {
+            connectionStatus.innerHTML = '<span class="loader"></span> Testing connection...';
+            
+            try {
+                console.log(`Attempting to connect to: ${apiBaseUrl}/version`);
+                const response = await fetch(`${apiBaseUrl}/version`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Connection successful:", data);
+                    showStatus(connectionStatus, `Connected successfully! Ollama version: ${data.version}`, true);
+                } else {
+                    console.error("Connection failed:", response.status, response.statusText);
+                    showStatus(connectionStatus, `Failed to connect: ${response.status} ${response.statusText}`, false);
+                }
+            } catch (error) {
+                console.error("Connection error:", error);
+                showStatus(connectionStatus, `Error: ${error.message}`, false);
+            }
+        });
+
+        // Function to list available models
+        async function fetchModels() {
+            modelsResult.innerHTML = '<span class="loader"></span> Fetching models...';
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/tags`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.models && data.models.length > 0) {
+                        const modelsList = document.createElement('ul');
+                        
+                        // Clear and populate model dropdowns
+                        modelSelect.innerHTML = '<option value="">Select a model</option>';
+                        chatModelSelect.innerHTML = '<option value="">Select a model</option>';
+                        
+                        data.models.forEach(model => {
+                            // Add to list
+                            const listItem = document.createElement('li');
+                            listItem.textContent = `${model.name} (${(model.size / (1024*1024*1024)).toFixed(2)} GB)`;
+                            modelsList.appendChild(listItem);
+                            
+                            // Add to testing dropdown
+                            const option = document.createElement('option');
+                            option.value = model.name;
+                            option.textContent = model.name;
+                            modelSelect.appendChild(option);
+                            
+                            // Add to chat dropdown
+                            const chatOption = document.createElement('option');
+                            chatOption.value = model.name;
+                            chatOption.textContent = model.name;
+                            chatModelSelect.appendChild(chatOption);
+                        });
+                        
+                        modelsResult.innerHTML = '';
+                        modelsResult.appendChild(modelsList);
+                    } else {
+                        showStatus(modelsResult, 'No models found on the server.', false);
+                    }
+                } else {
+                    showStatus(modelsResult, `Failed to fetch models: ${response.status} ${response.statusText}`, false);
+                }
+            } catch (error) {
+                showStatus(modelsResult, `Error: ${error.message}`, false);
+            }
+        }
+
+        listModelsBtn.addEventListener('click', fetchModels);
+        refreshModelsBtn.addEventListener('click', fetchModels);
+        refreshChatModelsBtn.addEventListener('click', fetchModels);
+
+        // Generate text with selected model
+        generateTextBtn.addEventListener('click', async () => {
+            const model = modelSelect.value;
+            const prompt = promptInput.value.trim();
+            
+            if (!model) {
+                showStatus(generationResult, 'Please select a model first.', false);
+                return;
+            }
+            
+            if (!prompt) {
+                showStatus(generationResult, 'Please enter a prompt.', false);
+                return;
+            }
+            
+            generationResult.textContent = '';
+            loadingIndicator.style.display = 'block';
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        prompt: prompt
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    generationResult.textContent = data.response;
+                } else {
+                    const errorText = await response.text();
+                    showStatus(generationResult, `Error: ${response.status} ${response.statusText}\n${errorText}`, false);
+                }
+            } catch (error) {
+                showStatus(generationResult, `Error: ${error.message}`, false);
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        });
+
+        // Chat functionality
+        function addMessage(text, isUser) {
+            const messageContainer = document.createElement('div');
+            messageContainer.className = 'message-container';
+            
+            const messageHeader = document.createElement('div');
+            messageHeader.className = 'message-header';
+            messageHeader.textContent = isUser ? 'You' : 'AI';
+            
+            const message = document.createElement('div');
+            message.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            message.textContent = text;
+            
+            messageContainer.appendChild(messageHeader);
+            messageContainer.appendChild(message);
+            chatMessages.appendChild(messageContainer);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const model = chatModelSelect.value;
+            const message = userInput.value.trim();
+            
+            if (!model) {
+                alert('Please select a model first.');
+                return;
+            }
+            
+            if (!message) {
+                return;
+            }
+            
+            // Add user message to chat
+            addMessage(message, true);
+            userInput.value = '';
+            
+            // Create typing indicator
+            const typingContainer = document.createElement('div');
+            typingContainer.className = 'message-container';
+            
+            const typingHeader = document.createElement('div');
+            typingHeader.className = 'message-header';
+            typingHeader.textContent = 'AI';
+            
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message bot-message';
+            typingIndicator.innerHTML = '<span class="loader"></span> Thinking...';
+            
+            typingContainer.appendChild(typingHeader);
+            typingContainer.appendChild(typingIndicator);
+            chatMessages.appendChild(typingContainer);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        prompt: message
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Remove typing indicator
+                    chatMessages.removeChild(typingContainer);
+                    // Add response to chat
+                    addMessage(data.response, false);
+                } else {
+                    // Remove typing indicator
+                    chatMessages.removeChild(typingContainer);
+                    // Add error message
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'message bot-message error';
+                    errorDiv.textContent = `Error: Failed to get a response (${response.status})`;
+                    chatMessages.appendChild(errorDiv);
+                }
+            } catch (error) {
+                // Remove typing indicator
+                chatMessages.removeChild(typingContainer);
+                // Add error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message bot-message error';
+                errorDiv.textContent = `Error: ${error.message}`;
+                chatMessages.appendChild(errorDiv);
+            }
+        }
+
+        sendMessageBtn.addEventListener('click', sendMessage);
+        
+        // Allow sending messages with Enter key (but Shift+Enter for new line)
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-test connection on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("Page loaded, testing connection...");
+            testConnectionBtn.click();
+            fetchModels(); // Also fetch models on page load for the chat
+        });
+    </script>
+</body>
+</html>
