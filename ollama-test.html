@@ -5,17 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ollama Chat Interface</title>
     <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --container-bg: #ffffff;
+            --container-border: #ddd;
+            --input-bg: #ffffff;
+            --chat-bg: #f9f9f9;
+            --user-msg-bg: #dcf8c6;
+            --bot-msg-bg: #ffffff;
+            --bot-msg-border: #e0e0e0;
+            --pre-bg: #f5f5f5;
+            --success-bg: #d4edda;
+            --success-color: #155724;
+            --error-bg: #f8d7da;
+            --error-color: #721c24;
+            --button-bg: #4CAF50;
+            --button-hover: #45a049;
+            --button-text: white;
+            --tab-bg: #f1f1f1;
+            --tab-active-bg: #4CAF50;
+            --tab-active-text: white;
+            --header-color: #333333;
+            --loader-border: #f3f3f3;
+            --loader-top: #3498db;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --container-bg: #1e1e1e;
+            --container-border: #444;
+            --input-bg: #2d2d2d;
+            --chat-bg: #2d2d2d;
+            --user-msg-bg: #2e7d32;
+            --bot-msg-bg: #383838;
+            --bot-msg-border: #555;
+            --pre-bg: #2d2d2d;
+            --success-bg: #1e4620;
+            --success-color: #a8e9ab;
+            --error-bg: #4a1c1e;
+            --error-color: #f5c6c8;
+            --button-bg: #388e3c;
+            --button-hover: #2e7d32;
+            --button-text: #e0e0e0;
+            --tab-bg: #2d2d2d;
+            --tab-active-bg: #388e3c;
+            --tab-active-text: #e0e0e0;
+            --header-color: #e0e0e0;
+            --loader-border: #333333;
+            --loader-top: #4caf50;
+        }
+
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
         .container {
-            border: 1px solid #ddd;
+            border: 1px solid var(--container-border);
             border-radius: 5px;
             padding: 20px;
             margin-bottom: 20px;
+            background-color: var(--container-bg);
         }
         .status {
             padding: 10px;
@@ -23,21 +79,27 @@
             margin: 10px 0;
         }
         .success {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: var(--success-bg);
+            color: var(--success-color);
         }
         .error {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: var(--error-bg);
+            color: var(--error-color);
+        }
+        textarea, select, input {
+            width: 100%;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--container-border);
+            border-radius: 4px;
         }
         textarea {
-            width: 100%;
             height: 100px;
             margin: 10px 0;
         }
         button {
-            background-color: #4CAF50;
-            color: white;
+            background-color: var(--button-bg);
+            color: var(--button-text);
             padding: 10px 15px;
             border: none;
             border-radius: 4px;
@@ -45,18 +107,19 @@
             margin-right: 10px;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: var(--button-hover);
         }
         pre {
-            background-color: #f5f5f5;
+            background-color: var(--pre-bg);
+            color: var(--text-color);
             padding: 10px;
             border-radius: 4px;
             overflow-x: auto;
         }
         .loader {
-            border: 4px solid #f3f3f3;
+            border: 4px solid var(--loader-border);
             border-radius: 50%;
-            border-top: 4px solid #3498db;
+            border-top: 4px solid var(--loader-top);
             width: 20px;
             height: 20px;
             animation: spin 2s linear infinite;
@@ -72,10 +135,10 @@
         .chat-container {
             height: 400px;
             overflow-y: auto;
-            border: 1px solid #ddd;
+            border: 1px solid var(--container-border);
             padding: 10px;
             margin-bottom: 10px;
-            background-color: #f9f9f9;
+            background-color: var(--chat-bg);
             border-radius: 5px;
         }
         .chat-input {
@@ -98,13 +161,13 @@
             max-width: 80%;
         }
         .user-message {
-            background-color: #dcf8c6;
+            background-color: var(--user-msg-bg);
             margin-left: auto;
             margin-right: 10px;
         }
         .bot-message {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
+            background-color: var(--bot-msg-bg);
+            border: 1px solid var(--bot-msg-border);
             margin-right: auto;
             margin-left: 10px;
         }
@@ -115,25 +178,27 @@
         }
         .message-header {
             font-size: 0.8em;
-            color: #666;
+            color: var(--text-color);
+            opacity: 0.8;
             margin-bottom: 2px;
             padding: 0 10px;
         }
         .tab-container {
             display: flex;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--container-border);
             margin-bottom: 20px;
         }
         .tab {
             padding: 10px 20px;
             cursor: pointer;
-            background-color: #f1f1f1;
+            background-color: var(--tab-bg);
+            color: var(--text-color);
             margin-right: 5px;
             border-radius: 5px 5px 0 0;
         }
         .tab.active {
-            background-color: #4CAF50;
-            color: white;
+            background-color: var(--tab-active-bg);
+            color: var(--tab-active-text);
         }
         .tab-content {
             display: none;
@@ -144,14 +209,27 @@
         .server-config {
             margin-bottom: 20px;
             padding: 15px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
+            background-color: var(--container-bg);
+            border: 1px solid var(--container-border);
             border-radius: 5px;
         }
         .server-config input {
             width: 70%;
             padding: 8px;
             margin-right: 10px;
+        }
+        .theme-toggle {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--container-border);
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 8px 12px;
+            font-size: 1.2em;
+            margin-left: 10px;
+        }
+        h1, h2, h3 {
+            color: var(--header-color);
         }
     </style>
 </head>
@@ -164,6 +242,7 @@
             <label for="serverUrl">Server URL:</label>
             <input type="text" id="serverUrl" placeholder="http://localhost:11434" value="http://localhost:11434">
             <button id="saveServerUrl">Save</button>
+            <button id="themeToggle" class="theme-toggle">🌙</button>
         </div>
     </div>
     
@@ -235,6 +314,38 @@
     </div>
 
     <script>
+        // Theme Switching Functionality
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
+        
+        // Check for saved theme preference or use device preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Set initial theme
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            htmlElement.setAttribute('data-theme', 'dark');
+            themeToggleBtn.textContent = '☀️';
+        } else {
+            htmlElement.setAttribute('data-theme', 'light');
+            themeToggleBtn.textContent = '🌙';
+        }
+        
+        // Toggle theme function
+        function toggleTheme() {
+            const currentTheme = htmlElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button icon
+            themeToggleBtn.textContent = newTheme === 'light' ? '🌙' : '☀️';
+        }
+        
+        // Add event listener to theme toggle button
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        
         // Настраиваемый URL API
         let customApiUrl = localStorage.getItem('ollamaServerUrl') || 'http://localhost:11434';
         document.getElementById('serverUrl').value = customApiUrl;
@@ -291,9 +402,9 @@
         // Helper function to show status messages
         function showStatus(element, message, isSuccess) {
             if (isSuccess) {
-                element.innerHTML = `<span style="color: #155724; background-color: #d4edda; padding: 5px; border-radius: 3px;">${message}</span>`;
+                element.innerHTML = `<span style="color: var(--success-color); background-color: var(--success-bg); padding: 5px; border-radius: 3px;">${message}</span>`;
             } else {
-                element.innerHTML = `<span style="color: #721c24; background-color: #f8d7da; padding: 5px; border-radius: 3px;">${message}</span>`;
+                element.innerHTML = `<span style="color: var(--error-color); background-color: var(--error-bg); padding: 5px; border-radius: 3px;">${message}</span>`;
             }
         }
 
