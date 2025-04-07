@@ -20,10 +20,12 @@ Ollama API Checker provides a user interface for interacting with Ollama API, al
 - **Two Operation Modes**:
   - **Chat**: Interactive chat with AI models
   - **API Testing**: Direct testing of API calls
-
+- **Dark/Light Theme**: Support for both dark and light user interface themes
 - **Streaming Response Handling**: Proper processing of streaming JSON responses from the Ollama API
 
 ![Chat Interface Demonstration with a Model](pic02.jpg)
+
+![Dark Theme Interface](pic03.jpg)
 
 ## Technical Details
 
