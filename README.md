@@ -1,67 +1,67 @@
 # Ollama API Checker (ollama-api-cheker)
 
-Инструмент для тестирования и взаимодействия с API серверов Ollama через удобный веб-интерфейс. Проект состоит из Node.js прокси-сервера и HTML-страницы для тестирования различных конечных точек API Ollama.
+A tool for testing and interacting with Ollama API servers through a convenient web interface. The project consists of a Node.js proxy server and an HTML page for testing various Ollama API endpoints.
 
-![Интерфейс Ollama API Checker](pic01.jpg)
+![Ollama API Checker Interface](pic01.jpg)
 
-## Описание проекта
+## Project Description
 
-Ollama API Checker предоставляет пользовательский интерфейс для взаимодействия с Ollama API, позволяя:
+Ollama API Checker provides a user interface for interacting with Ollama API, allowing you to:
 
-- Тестировать соединение с серверами Ollama
-- Просматривать список доступных моделей
-- Генерировать тексты используя выбранную модель
-- Взаимодействовать с моделями через чат-интерфейс
+- Test connections to Ollama servers
+- View a list of available models
+- Generate texts using a selected model
+- Interact with models through a chat interface
 
-## Особенности
+## Features
 
-- **Прокси-сервер**: Решает проблемы CORS при обращении к API Ollama из браузера
-- **Настраиваемый URL API**: Возможность подключения к серверам Ollama на разных хостах
-- **Два режима работы**:
-  - **Чат**: Интерактивный чат с AI-моделями
-  - **API тестирование**: Прямое тестирование API-вызовов
+- **Proxy Server**: Solves CORS issues when accessing the Ollama API from a browser
+- **Customizable API URL**: Ability to connect to Ollama servers on different hosts
+- **Two Operation Modes**:
+  - **Chat**: Interactive chat with AI models
+  - **API Testing**: Direct testing of API calls
 
-- **Обработка потоковых ответов**: Правильная обработка потоковых JSON-ответов от API Ollama
+- **Streaming Response Handling**: Proper processing of streaming JSON responses from the Ollama API
 
-![Демонстрация чат-интерфейса с моделью](pic02.jpg)
+![Chat Interface Demonstration with a Model](pic02.jpg)
 
-## Технические детали
+## Technical Details
 
-### Структура проекта
+### Project Structure
 
-- `server.js` - Прокси-сервер на Node.js
-- `ollama-test.html` - HTML страница с пользовательским интерфейсом
-- `README.md` - Документация проекта
+- `server.js` - Node.js proxy server
+- `ollama-test.html` - HTML page with user interface
+- `README.md` - Project documentation
 
-### Принцип работы
+### How It Works
 
-1. Node.js сервер запускается на порте 3000
-2. Запросы с префиксом `/api/` проксируются на сервер Ollama (по умолчанию http://localhost:11434)
-3. Для конечной точки `/api/generate` обрабатываются потоковые ответы и собираются в единый ответ
-4. Веб-страница предоставляет графический интерфейс для взаимодействия с API
+1. The Node.js server runs on port 3000
+2. Requests with the `/api/` prefix are proxied to the Ollama server (default: http://localhost:11434)
+3. For the `/api/generate` endpoint, streaming responses are processed and compiled into a single response
+4. The web page provides a graphical interface for interacting with the API
 
 ### API Endpoints
 
-Поддерживаются следующие конечные точки API:
-- `/api/version` - Проверка версии Ollama
-- `/api/tags` - Получение списка доступных моделей
-- `/api/generate` - Генерация текста с помощью выбранной модели
+The following API endpoints are supported:
+- `/api/version` - Check Ollama version
+- `/api/tags` - Get a list of available models
+- `/api/generate` - Generate text using the selected model
 
-## Запуск
+## Running
 
-1. Установите Ollama на локальной машине или на удаленном сервере
-2. Клонируйте этот репозиторий
-3. Запустите Node.js сервер:
+1. Install Ollama on your local machine or on a remote server
+2. Clone this repository
+3. Start the Node.js server:
 ```bash
 node server.js
 ```
-4. Откройте браузер и перейдите по адресу: http://localhost:3000
+4. Open your browser and go to: http://localhost:3000
 
-## Настройка
+## Configuration
 
-По умолчанию проект настроен на работу с Ollama API по адресу http://localhost:11434, но вы можете изменить URL в интерфейсе приложения.
+By default, the project is configured to work with the Ollama API at http://localhost:11434, but you can change the URL in the application interface.
 
-## Требования
+## Requirements
 
 - Node.js
-- Работающий сервер Ollama
+- Running Ollama server
