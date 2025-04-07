@@ -5,7 +5,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 3000;
-const OLLAMA_API_URL = 'http://192.168.2.74:4444';
+// Значение по умолчанию, которое можно переопределить через параметр запроса
+const DEFAULT_OLLAMA_API_URL = 'http://localhost:11434';
 
 const server = http.createServer((req, res) => {
   // Set CORS headers for all responses
@@ -40,6 +41,9 @@ const server = http.createServer((req, res) => {
 
   // Proxy API requests to Ollama server
   if (pathname.startsWith('/api/')) {
+    // Получаем URL Ollama API из параметра запроса или используем значение по умолчанию
+    const ollamaApiUrl = parsedUrl.query.apiUrl || DEFAULT_OLLAMA_API_URL;
+    
     let data = [];
     req.on('data', chunk => {
       data.push(chunk);
@@ -50,8 +54,8 @@ const server = http.createServer((req, res) => {
       const apiPath = pathname;
       
       const options = {
-        hostname: url.parse(OLLAMA_API_URL).hostname,
-        port: url.parse(OLLAMA_API_URL).port || 80,
+        hostname: url.parse(ollamaApiUrl).hostname,
+        port: url.parse(ollamaApiUrl).port || 80,
         path: apiPath,  // Keep the /api prefix
         method: req.method,
         headers: {
@@ -59,7 +63,7 @@ const server = http.createServer((req, res) => {
         }
       };
 
-      console.log(`Proxying request to: ${OLLAMA_API_URL}${apiPath}`);
+      console.log(`Proxying request to: ${ollamaApiUrl}${apiPath}`);
 
       const proxyReq = http.request(options, proxyRes => {
         // Special handling for generate endpoint which returns streaming JSON
@@ -166,5 +170,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Proxy server running at http://localhost:${PORT}`);
-  console.log(`Proxying requests to Ollama API at ${OLLAMA_API_URL}`);
+  console.log(`Default Ollama API URL: ${DEFAULT_OLLAMA_API_URL}`);
 });

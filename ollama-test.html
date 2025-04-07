@@ -141,10 +141,31 @@
         .tab-content.active {
             display: block;
         }
+        .server-config {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .server-config input {
+            width: 70%;
+            padding: 8px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
     <h1>Ollama Chat Interface</h1>
+    
+    <div class="server-config">
+        <h3>Ollama Server Configuration</h3>
+        <div>
+            <label for="serverUrl">Server URL:</label>
+            <input type="text" id="serverUrl" placeholder="http://localhost:11434" value="http://localhost:11434">
+            <button id="saveServerUrl">Save</button>
+        </div>
+    </div>
     
     <div class="tab-container">
         <div class="tab active" data-tab="chat">Chat</div>
@@ -214,8 +235,26 @@
     </div>
 
     <script>
-        // API endpoint is now our local proxy server
-        const apiBaseUrl = '/api'; // This will be handled by our proxy server
+        // Настраиваемый URL API
+        let customApiUrl = localStorage.getItem('ollamaServerUrl') || 'http://localhost:11434';
+        document.getElementById('serverUrl').value = customApiUrl;
+        
+        // API endpoint с добавлением параметра apiUrl
+        function getApiEndpoint(path) {
+            return `/api${path}?apiUrl=${encodeURIComponent(customApiUrl)}`;
+        }
+        
+        // Сохранение URL сервера
+        document.getElementById('saveServerUrl').addEventListener('click', () => {
+            const newUrl = document.getElementById('serverUrl').value.trim();
+            if (newUrl) {
+                customApiUrl = newUrl;
+                localStorage.setItem('ollamaServerUrl', newUrl);
+                showStatus(connectionStatus, 'Server URL updated. Please test the connection.', true);
+                // Сбросить состояние подключения
+                connectionStatus.innerHTML = 'Press "Test Connection" to verify new server URL';
+            }
+        });
         
         // Tab switching logic
         document.querySelectorAll('.tab').forEach(tab => {
@@ -263,8 +302,8 @@
             connectionStatus.innerHTML = '<span class="loader"></span> Testing connection...';
             
             try {
-                console.log(`Attempting to connect to: ${apiBaseUrl}/version`);
-                const response = await fetch(`${apiBaseUrl}/version`, {
+                console.log(`Attempting to connect to: ${getApiEndpoint('/version')}`);
+                const response = await fetch(getApiEndpoint('/version'), {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json'
@@ -290,7 +329,7 @@
             modelsResult.innerHTML = '<span class="loader"></span> Fetching models...';
             
             try {
-                const response = await fetch(`${apiBaseUrl}/tags`, {
+                const response = await fetch(getApiEndpoint('/tags'), {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json'
@@ -361,7 +400,7 @@
             loadingIndicator.style.display = 'block';
             
             try {
-                const response = await fetch(`${apiBaseUrl}/generate`, {
+                const response = await fetch(getApiEndpoint('/generate'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -443,7 +482,7 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
             try {
-                const response = await fetch(`${apiBaseUrl}/generate`, {
+                const response = await fetch(getApiEndpoint('/generate'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
