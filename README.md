@@ -16,6 +16,7 @@ Ollama API Checker provides a user interface for interacting with Ollama API, al
 ## Features
 
 - **Proxy Server**: Solves CORS issues when accessing the Ollama API from a browser
+- **Automatic Browser Launch**: Automatically opens the default system browser when the server starts
 - **Customizable API URL**: Ability to connect to Ollama servers on different hosts
 - **Two Operation Modes**:
   - **Chat**: Interactive chat with AI models
@@ -38,9 +39,10 @@ Ollama API Checker provides a user interface for interacting with Ollama API, al
 ### How It Works
 
 1. The Node.js server runs on port 3000
-2. Requests with the `/api/` prefix are proxied to the Ollama server (default: http://localhost:11434)
-3. For the `/api/generate` endpoint, streaming responses are processed and compiled into a single response
-4. The web page provides a graphical interface for interacting with the API
+2. The default system browser automatically opens with the application page
+3. Requests with the `/api/` prefix are proxied to the Ollama server (default: http://localhost:11434)
+4. For the `/api/generate` endpoint, streaming responses are processed and compiled into a single response
+5. The web page provides a graphical interface for interacting with the API
 
 ### API Endpoints
 
@@ -53,11 +55,16 @@ The following API endpoints are supported:
 
 1. Install Ollama on your local machine or on a remote server
 2. Clone this repository
-3. Start the Node.js server:
+3. Install the required dependencies:
+```bash
+npm install
+```
+4. Start the Node.js server:
 ```bash
 node server.js
 ```
-4. Open your browser and go to: http://localhost:3000
+
+The application will automatically open in your default browser at http://localhost:3000.
 
 ## Configuration
 
