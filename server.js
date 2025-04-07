@@ -3,6 +3,7 @@ const https = require('https');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
+// Удаляем статический импорт open
 
 const PORT = 3000;
 // Значение по умолчанию, которое можно переопределить через параметр запроса
@@ -171,4 +172,16 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`Proxy server running at http://localhost:${PORT}`);
   console.log(`Default Ollama API URL: ${DEFAULT_OLLAMA_API_URL}`);
+  
+  // Используем динамический импорт
+  (async () => {
+    try {
+      const open = await import('open');
+      // Открываем браузер по умолчанию с URL нашего приложения
+      console.log('Opening browser...');
+      await open.default(`http://localhost:${PORT}`);
+    } catch (error) {
+      console.error('Failed to open browser:', error);
+    }
+  })();
 });
